@@ -37,3 +37,8 @@ bdd:
 # Run both pytest and behave tests
 test: unit-test bdd
 	@echo "All tests completed successfully."
+
+.PHONY: boostrap-cluster
+bootstrap-cluster:
+	@echo "🔧 Bootstrapping kubernetes cluster..."
+	./hack/boostrap_cluster.sh
