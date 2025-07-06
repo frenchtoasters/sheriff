@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+stripe
+pydantic
+httpx
+pytest
+pytest-asyncio
+black
+flake8
+pyyaml
+psycopg2-binary
+behave
+requests

@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  stripe-mock:
+    image: stripe/stripe-mock:latest
+    ports:
+      - "12111:12111"
+
+  postgres:
+    image: postgres:14
+    container_name: sheriff_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: sheriff-db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./hack/db-init.sql:/docker-entrypoint-initdb.d/db-init.sql
+    # ports:
+    #   - "5432:5432"
+
+  sheriff-api:
+    build: .
+    container_name: sheriff_api
+    depends_on:
+      - postgres
+      - stripe-mock
+    environment:
+      STRIPE_SECRET_KEY: sk_test_123
+      STRIPE_WEBHOOK_SECRET: sk_test_123
+      STRIPE_API_BASE: http://stripe-mock:12111
+
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: sheriff-db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+
+      REFRESH_URL: https://example.com/reauth
+      RETURN_URL: https://example.com/onboarding_complete
+    ports:
+      - "8000:8000"
+    command: uvicorn sheriff.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  postgres_data:

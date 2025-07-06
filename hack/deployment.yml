@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sheriff-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sheriff-api
+  template:
+    metadata:
+      labels:
+        app: sheriff-api
+    spec:
+      containers:
+        - name: sheriff-api
+          image: your-docker-repo/sheriff-api:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: stripe-secrets
+                  key: STRIPE_SECRET_KEY
+            - name: STRIPE_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: stripe-secrets
+                  key: STRIPE_WEBHOOK_SECRET
+            - name: DB_HOST
+              value: postgres
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: appdb
+            - name: DB_USER
+              value: appuser
+            - name: DB_PASSWORD
+              value: apppassword
+            - name: REFRESH_URL
+              value: https://example.com/reauth
+            - name: RETURN_URL
+              value: https://example.com/onboarding_complete
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sheriff-api
+spec:
+  selector:
+    app: sheriff-api
+  ports:
+    - port: 80
+      targetPort: 8000
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: stripe-secrets
+type: Opaque
+data:
+  STRIPE_SECRET_KEY: <base64-encoded-key>
+  STRIPE_WEBHOOK_SECRET: <base64-encoded-key>

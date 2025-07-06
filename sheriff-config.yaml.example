@@ -1,0 +1,16 @@
+environment: local
+stripe:
+  secret_key: "sk_test_123..."
+  webhook_secret: "whsec_123..."
+
+database:
+  host: "localhost"
+  port: 5432
+  name: "sheriff-db"
+  user: "postgres"
+  password: "postgres"
+
+
+urls:
+  refresh_url: "https://example.com/reauth"
+  return_url: "https://example.com/onboarding_complete"
